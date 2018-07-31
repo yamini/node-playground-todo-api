@@ -1,70 +1,40 @@
-var mongoose = require('mongoose');
+var express = require('express');
+var bodyParser = require('body-parser');
 
-//mongoose supports callbacks but not promises. Tell it what promise library to use
-mongoose.Promise = global.Promise;
+var {mongoose} = require('./db/mongoose');
+var {Todo} = require('./models/todo');
+var {User} = require('./models/user');
 
-mongoose.connect('mongodb://localhost:27017/TodoApp');
+//set up app
+var app = express();
 
-//create model
-var Todo = mongoose.model('Todo', {
-    text: {
-        type: String,
-        required: true,
-        minlength: 1,
-        trim: true
-    },
-    completed: {
-        type: Boolean,
-        default: false
-    },
-    completedAt: {
-        type: Number,
-        default: null
-    }
+app.use(bodyParser.json());
+
+app.post('/todos', (req, res) =>{
+    var todo = new Todo({
+        text: req.body.text
+    });
+
+    todo.save().then((doc) => {
+        res.send(doc);
+    }, (e) => {
+        res.status(400).send(e);
+    });
 });
 
-// create a To Do item
-// var newTodo = new Todo({
-//     text: 'Cook dinner'
+// app.post('/users', (req, res) => {
+//     var user = new User({
+//         email: req.body.email
+//     });
+
+//     user.save().then((doc) => {
+//         res.send(doc);
+//     }, (e) => {
+//         res.status(400).send(e);
+//     });
 // });
 
-//challenge
-// var otherTodo = new Todo({
-//     text: 'New todo item '
-// });
 
-// Save Todo to db
-// newTodo.save().then((doc) => {
-//     console.log('Saved Todo', doc);
-// }, (e) => {
-//     console.log('Unable to save Todo');
-// });
-
-// otherTodo.save().then((doc) => {
-//     console.log(JSON.stringify(doc, undefined, 2));
-// }, (e) => {
-//     console.log('Unable to save', e);
-// });
-
-//Challenge 2
-
-var User = mongoose.model('User', {
-    email: {
-        type: String,
-        required: true,
-        minlength: 1,
-        trim: true
-    }
-});
-
-// create instance
-var newUser = new User({
-    email: ' ykagal@gmail.com '
-});
-
-//save instance
-newUser.save().then((doc) => {
-    console.log(JSON.stringify(doc, undefined, 2));
-}, (e) => {
-    console.log('Unable to save', e);
+app.listen(3000, () => {
+    console.log('Started on port 3000');
 });
